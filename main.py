@@ -7,7 +7,6 @@ import sqlite3
 import time
 from stable_baselines3 import PPO
 from stable_baselines3.common.envs import DummyVecEnv
-from stable_baselines3.common.vec_env import DummyVecEnv
 from gym import spaces
 import gym
 
@@ -31,7 +30,7 @@ class PricePredictor:
     
     def predict(self, X):
         return self.model.predict(X)
-    
+
 # Function to get the latest XRP data
 def get_xrp_data():
     data = yf.download('XRP-USD', period='15d', interval='1m')
@@ -49,15 +48,16 @@ def prepare_data(data, window_size):
     y = np.array(y)
     return X, y
 
-# Custom environment for RL agent
+# Custom environment for RL agent with risk factor
 class TradingEnv(gym.Env):
-    def __init__(self, data, window_size):
+    def __init__(self, data, window_size, risk_factor):
         super(TradingEnv, self).__init__()
         self.data = data
         self.window_size = window_size
         self.current_step = window_size
         self.balance = 1000
         self.positions = 0
+        self.risk_factor = risk_factor
         self.profit_history = []
         self.action_space = spaces.Discrete(3) # 0: Hold, 1: Buy, 2: Sell
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(window_size + 1,), dtype=np.float32)
@@ -74,12 +74,15 @@ class TradingEnv(gym.Env):
     
     def step(self, action):
         current_price = self.data['Close'].values[self.current_step]
+
+        # Adjust the position size based on the risk factor
+        position_size = self.balance * self.risk_factor
         
         if action == 1 and self.balance > 0:  # Buy
-            self.positions = self.balance / current_price
-            self.balance = 0
+            self.positions = position_size / current_price
+            self.balance -= position_size
         elif action == 2 and self.positions > 0:  # Sell
-            self.balance = self.positions * current_price
+            self.balance += self.positions * current_price
             self.positions = 0
         
         self.profit_history.append(self.balance + self.positions * current_price)
@@ -103,8 +106,11 @@ data = get_xrp_data()
 X, y = prepare_data(data, window_size)
 price_predictor.train(X, y)
 
+# Define risk factor (0 = least risk, 1 = most risk)
+risk_factor = 0.5  # Adjust this value as needed
+
 # Initialize and train the RL agent
-env = DummyVecEnv([lambda: TradingEnv(data, window_size)])
+env = DummyVecEnv([lambda: TradingEnv(data, window_size, risk_factor)])
 model = PPO('MlpPolicy', env, verbose=1)
 model.learn(total_timesteps=10000)
 
