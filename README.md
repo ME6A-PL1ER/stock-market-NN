@@ -8,6 +8,8 @@ This project implements a neural network-based paper trading bot that uses `yfin
 - **Paper Trading Simulation**: Simulates trading with a starting balance of $1000.
 - **Dynamic Data Storage**: Saves training data to an SQLite database for each stock symbol.
 - **Real-time Profit Visualization**: Displays a real-time profit graph and price graph.
+- **Risk Factor**: Has a 0-1 value changing its riskyness.
+- **Reinforcement Learning hybrid**: Uses reinforcement learning that rewards it when it gets a lot of money, while also taking into account historical price data.
 
 ## Requirements
 - Python 3.x
@@ -16,16 +18,18 @@ This project implements a neural network-based paper trading bot that uses `yfin
 - `pandas`
 - `matplotlib`
 - `sqlite3`
+- `stable-baselines3`
 
 Install the necessary packages using:
 ```bash
-pip install yfinance tensorflow pandas matplotlib
+pip install yfinance tensorflow pandas matplotlib stable-baselines3
 ```
 
 ## Usage
 1. **Run the Script**: Execute the script to start the real-time trading simulation. (Will probably need to be run from terminal due to directory permissions).
 2. **Real-time Display**: The script will update and display the profit graph and price graph every minute.
 3. **Database Storage**: Training data is saved to an SQLite database (`trading_data.db`) dynamically for each stock symbol.
+4. **Risk Factor**: There is a `risk_factor` variable that controls how risky the bot will be. 0 being no risk, 1 being basically putting all its money in the trade hoping for largest gains.
 
 ## Code Overview
 1. **Data Retrieval**: Fetches XRP-USD data using `yfinance`.
@@ -34,6 +38,7 @@ pip install yfinance tensorflow pandas matplotlib
 4. **Paper Trading Simulation**: Simulates trading based on model predictions.
 5. **Real-time Update Loop**: Continuously updates data and re-evaluates trading decisions every minute.
 6. **Database Storage**: Saves training data to an SQLite database for each stock symbol.
+7. **Reinforcement Learning**: Uses a reinforcement learning hybrid that takes into account historical price data.
 
 ## Example
 Run the script and watch the real-time profit and price graphs:
