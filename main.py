@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import sqlite3
 import time
 from stable_baselines3 import PPO
-from stable_baselines3.common.envs import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv
 from gym import spaces
 import gym
 
@@ -46,6 +46,8 @@ def prepare_data(data, window_size):
         y.append(data['returns'][i])
     X = np.array(X)
     y = np.array(y)
+    X = X.reshape(X.shape[0], X.shape[1], 1) 
+
     return X, y
 
 # Custom environment for RL agent with risk factor
@@ -107,7 +109,7 @@ X, y = prepare_data(data, window_size)
 price_predictor.train(X, y)
 
 # Define risk factor (0 = least risk, 1 = most risk)
-risk_factor = 0.5  # Adjust this value as needed
+risk_factor = 0.5
 
 # Initialize and train the RL agent
 env = DummyVecEnv([lambda: TradingEnv(data, window_size, risk_factor)])
@@ -138,7 +140,7 @@ while True:
     ax.plot(profit_history, label='Profit')
     ax.plot(data['Close'].values[:len(profit_history)], label='Price')
     ax.legend()
-    plt.pause(60)  # Update every minute
+    plt.pause(60)
 
 plt.ioff()
 plt.show()
