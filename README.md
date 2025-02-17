@@ -15,7 +15,7 @@ This repository contains a reinforcement learning (RL) agent that learns to trad
 To run the code, you need to install the following dependencies:
 
 ```bash
-pip install torch gym pandas requests matplotlib~~
+pip install torch gym pandas requests matplotlib
 ```
-
+~~
 # project was scrapped idk why i was making this
